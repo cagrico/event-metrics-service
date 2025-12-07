@@ -1,0 +1,219 @@
+definitions:
+  fiber.BulkCreateEventsRequest:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/fiber.bulkEventItem'
+        type: array
+    type: object
+  fiber.CreateEventRequest:
+    description: Event creation DTO
+    properties:
+      campaign_id:
+        type: string
+      channel:
+        type: string
+      event_name:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      tags:
+        items:
+          type: string
+        type: array
+      timestamp:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  fiber.CreateEventResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  fiber.MetricsGroupResponse:
+    properties:
+      key:
+        type: string
+      total_count:
+        type: integer
+      unique_users:
+        type: integer
+    type: object
+  fiber.MetricsResponse:
+    properties:
+      event_name:
+        type: string
+      from:
+        type: integer
+      group_by:
+        type: string
+      groups:
+        items:
+          $ref: '#/definitions/fiber.MetricsGroupResponse'
+        type: array
+      to:
+        type: integer
+      total_count:
+        type: integer
+      unique_users:
+        type: integer
+    type: object
+  fiber.bulkEventItem:
+    properties:
+      campaign_id:
+        type: string
+      channel:
+        type: string
+      event_name:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      tags:
+        items:
+          type: string
+        type: array
+      timestamp:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  internal_events_adapters_http_fiber.ErrorResponse:
+    properties:
+      error:
+        example: invalid_event
+        type: string
+      message:
+        example: Event payload is invalid
+        type: string
+    type: object
+  internal_metrics_adapters_http_fiber.ErrorResponse:
+    properties:
+      error:
+        example: invalid_event
+        type: string
+      message:
+        example: Event payload is invalid
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /events:
+    post:
+      consumes:
+      - application/json
+      description: Stores a single event with idempotency handling
+      parameters:
+      - description: Event payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/fiber.CreateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Duplicate event
+          schema:
+            $ref: '#/definitions/fiber.CreateEventResponse'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/fiber.CreateEventResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_events_adapters_http_fiber.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_events_adapters_http_fiber.ErrorResponse'
+      summary: Create a new event
+      tags:
+      - Events
+  /events/bulk:
+    post:
+      consumes:
+      - application/json
+      description: Accepts a list of events and stores them individually
+      parameters:
+      - description: Bulk event payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/fiber.BulkCreateEventsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_events_adapters_http_fiber.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_events_adapters_http_fiber.ErrorResponse'
+      summary: Bulk create events
+      tags:
+      - Events
+  /metrics:
+    get:
+      consumes:
+      - application/json
+      description: Returns metrics grouped by channel or time bucket
+      parameters:
+      - description: Event name
+        in: query
+        name: event_name
+        required: true
+        type: string
+      - description: From timestamp
+        in: query
+        name: from
+        required: true
+        type: integer
+      - description: To timestamp
+        in: query
+        name: to
+        required: true
+        type: integer
+      - description: 'Group by: channel | time'
+        in: query
+        name: group_by
+        type: string
+      - description: 'Interval: minute | hour | day'
+        in: query
+        name: interval
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/fiber.MetricsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_metrics_adapters_http_fiber.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_metrics_adapters_http_fiber.ErrorResponse'
+      summary: Query aggregated metrics
+      tags:
+      - Metrics
+swagger: "2.0"
