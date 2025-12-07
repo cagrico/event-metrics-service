@@ -61,7 +61,7 @@ Reasons for using Hexagonal Architecture:
 
 ## Test-Driven Development (TDD)
 
-### Event Usecase (100% Coverage)
+### Event Usecase
 - Reject empty required fields
 - Reject future timestamps
 - Dedupe key generation
@@ -69,7 +69,7 @@ Reasons for using Hexagonal Architecture:
 - Repository error propagation
 - Metadata & tags validation
 
-### Metrics Usecase (100% Coverage)
+### Metrics Usecase
 - Required parameter validation
 - Time range validation
 - `group_by` and `interval` validation
@@ -183,24 +183,6 @@ Swagger:
 
 ---
 
-# Future Improvements (Optional)
-
-- **Load Testing (20k RPS target)**
-    - Add k6 or wrk load test scripts
-    - Tune PostgreSQL connection pooling
-    - Add batch write support if needed
-
-- **Observability**
-    - Structured logging (Zap)
-    - Prometheus `/metrics` endpoint
-    - Trace ID propagation
-
-- **Horizontal Scalability**
-    - Run multiple API replicas behind a load balancer
-    - Partitioning/sharding strategies for massive datasets
-
----
-
 # Türkçe
 
 ## Genel Bakış
@@ -260,7 +242,7 @@ Hexagonal mimarinin avantajları:
 
 ## TDD Süreci
 
-### Event Usecase (%100 Coverage)
+### Event Usecase
 - Zorunlu alan doğrulaması
 - Gelecek zaman reddi
 - Idempotency için dedupe key üretimi
@@ -268,7 +250,7 @@ Hexagonal mimarinin avantajları:
 - Repository hatalarının doğru yönetimi
 - Tags & metadata kontrolü
 
-### Metrics Usecase (%100 Coverage)
+### Metrics Usecase
 - Parametre doğrulaması
 - Zaman aralığı doğrulaması
 - `group_by` ve `interval` kuralları
