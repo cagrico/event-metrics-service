@@ -54,7 +54,7 @@ func (h *EventHandler) CreateEvent(c *fiber.Ctx) error {
 		Metadata:   req.Metadata,
 	}
 
-	created, err := h.storeUC.Execute(c.Context(), input)
+	created, err := h.storeUC.Execute(c.UserContext(), input)
 	if err != nil {
 		switch {
 		case errors.Is(err, usecase.ErrInvalidEvent),
@@ -71,7 +71,6 @@ func (h *EventHandler) CreateEvent(c *fiber.Ctx) error {
 	}
 
 	if !created {
-		// duplicate
 		resp := CreateEventResponse{
 			Status: "duplicate",
 		}
@@ -109,7 +108,6 @@ func (h *EventHandler) BulkCreateEvents(c *fiber.Ctx) error {
 		})
 	}
 
-	// HTTP DTO -> usecase DTO map
 	inputs := make([]usecase.StoreEventInput, len(req.Events))
 	for i, e := range req.Events {
 		inputs[i] = usecase.StoreEventInput{
@@ -124,12 +122,13 @@ func (h *EventHandler) BulkCreateEvents(c *fiber.Ctx) error {
 	}
 
 	result, err := h.storeUC.BulkCreateEvents(
-		c.Context(),
+		c.UserContext(),
 		usecase.BulkCreateEventsInput{Events: inputs},
 	)
 	if err != nil {
-		switch err {
-		case usecase.ErrInvalidEvent, usecase.ErrFutureTime:
+		switch {
+		case errors.Is(err, usecase.ErrInvalidEvent),
+			errors.Is(err, usecase.ErrFutureTime):
 			return c.Status(http.StatusBadRequest).JSON(ErrorResponse{
 				Error:   "invalid_event",
 				Message: err.Error(),

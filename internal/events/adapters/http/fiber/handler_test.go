@@ -157,7 +157,7 @@ func TestCreateEvent_InvalidJSON(t *testing.T) {
 	fakeUC := &fakeStoreEventUseCase{}
 	app := setupTestApp(fakeUC)
 
-	// Geçersiz JSON gönderelim
+	// Undefined JSON
 	req := httptest.NewRequest(http.MethodPost, "/events", bytes.NewBufferString(`{"event_name":`))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -185,7 +185,7 @@ func TestCreateEvent_ValidationError(t *testing.T) {
 	app := setupTestApp(fakeUC)
 
 	reqBody := CreateEventRequest{
-		// EventName boş veya usecase ErrInvalidEvent döndürecek şekilde
+		// Empty EventName or usecase return ErrInvalidEvent
 		EventName: "",
 		Channel:   "web",
 		UserID:    "user_123",
@@ -203,8 +203,9 @@ func TestCreateEvent_ValidationError(t *testing.T) {
 		t.Fatalf("invalid json response: %v", err)
 	}
 
-	if respJSON["error"] != usecase.ErrInvalidEvent.Error() {
-		t.Errorf("expected error=%q, got %v", usecase.ErrInvalidEvent.Error(), respJSON["error"])
+	// Handler Error: "invalid_event", Message: err.Error()
+	if respJSON["error"] != "invalid_event" {
+		t.Errorf("expected error=%q, got %v", "invalid_event", respJSON["error"])
 	}
 }
 
@@ -235,8 +236,9 @@ func TestCreateEvent_FutureTimeError(t *testing.T) {
 		t.Fatalf("invalid json response: %v", err)
 	}
 
-	if respJSON["error"] != usecase.ErrFutureTime.Error() {
-		t.Errorf("expected error=%q, got %v", usecase.ErrFutureTime.Error(), respJSON["error"])
+	// Handler Error: "invalid_event"
+	if respJSON["error"] != "invalid_event" {
+		t.Errorf("expected error=%q, got %v", "invalid_event", respJSON["error"])
 	}
 }
 
@@ -275,12 +277,12 @@ func TestCreateEvent_InternalError(t *testing.T) {
 }
 
 // ---- Bulk tests ----
+
 func TestBulkCreateEvents_Success_AllCreated(t *testing.T) {
 	now := time.Now().Add(-time.Minute).Unix()
 
 	fakeUC := &fakeStoreEventUseCase{
 		BulkCreateFunc: func(ctx context.Context, in usecase.BulkCreateEventsInput) (usecase.BulkCreateEventsResult, error) {
-			// Hepsi created
 			return usecase.BulkCreateEventsResult{
 				Created:    len(in.Events),
 				Duplicates: 0,
@@ -456,8 +458,9 @@ func TestBulkCreateEvents_ValidationError(t *testing.T) {
 		t.Fatalf("invalid json response: %v", err)
 	}
 
-	if respJSON["error"] != usecase.ErrInvalidEvent.Error() {
-		t.Errorf("expected error=%q, got %v", usecase.ErrInvalidEvent.Error(), respJSON["error"])
+	// Handler: Error: "invalid_event"
+	if respJSON["error"] != "invalid_event" {
+		t.Errorf("expected error=%q, got %v", "invalid_event", respJSON["error"])
 	}
 }
 
